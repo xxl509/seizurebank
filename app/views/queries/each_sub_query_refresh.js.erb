@@ -1,0 +1,5 @@
+
+var data = <%= @queries_json.html_safe %>;
+$('#subject-table').bootstrapTable('removeAll');
+$('#subject-table').bootstrapTable("append", data);
+$("#loading-sign-sub-each").css("display","none");

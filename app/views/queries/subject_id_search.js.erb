@@ -1,0 +1,8 @@
+
+var data = <%= @queries_json.html_safe %>;
+$('#all-table').bootstrapTable('removeAll');
+$('#subject-table').bootstrapTable('removeAll');
+$('#all-table').bootstrapTable("append", data);
+$('#query_num_text').text(<%= @query_num %>);
+$('#fragment_num_text').text(<%= @fragments_sum %>);
+$("#loading-sign-sub").css("display","none");

@@ -1,0 +1,43 @@
+.fixed-table-container thead th .both {
+    background-image: none;
+    position: relative;
+}
+.fixed-table-container thead th .both:after {
+  content:"\e150";
+  font-family:"Glyphicons Halflings";
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: block;
+  opacity: 0.2;
+}
+
+.fixed-table-container thead th .asc {
+    background-image: none;
+}
+
+.fixed-table-container thead th .asc:after {
+  content:"\e155";
+  font-family:"Glyphicons Halflings";
+  bottom: 8px;
+  right: 8px;
+  display: block;
+  opacity: 0.5;
+}
+
+.fixed-table-container thead th .desc {
+    background-image: none;
+}
+
+.fixed-table-container thead th .desc:after {
+  content:"\e156";
+  font-family:"Glyphicons Halflings";
+  bottom: 8px;
+  right: 8px;
+  display: block;
+  opacity: 0.5;
+}
+
+.fixed-table-pagination .pagination-detail{
+  margin-left: 5px;
+}

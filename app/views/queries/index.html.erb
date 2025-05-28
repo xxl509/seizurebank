@@ -1,0 +1,266 @@
+<div id="outer-container" style="padding-left: 0px">
+  <%= render 'queries/side_bar'%>
+  <div id="content">
+    <%= render 'queries/filter_bar'%>
+    <div class="query-table" style="margin-top: 20px">
+      <%= render 'queries/query_table'%>
+    </div>
+    <div class="query-sub-table" style="margin-top: 20px">
+      <%= render 'queries/query_sub_table'%>
+    </div>
+  </div>
+</div>
+
+<%= link_to "Download", download_path, style: "display: none", id: "download_link" %>
+
+<div class="modal fade" id="download_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="header_title">
+          <span>Select Exporting Type</span>
+        </h4>
+      </div>
+      <div class="modal-body">
+        <div class="table-bar" id="progress-bar" style="display: none; margin: 0px 0px 20px 0px">
+          <span style="font-size:16px; padding-left:5px"> <span class="fa fa-spinner fa-spin fa-1x fa-fw loading-icon"></span></span> Progress: </span>
+          <%= render 'queries/progress_bar' %>
+        </div>
+        <div class="table-bar">
+          <span style="font-size:16px; padding-left:5px"> <span class="fa fa-user-circle-o"></span> Subject Type: </span>
+          <hr>
+          <%= radio_button_tag 'subject_type', "Selected", true, class: "subject_type", id: "selected_sub"  %> <o class="select-title">Selected Subject(s)</o>
+          <%= radio_button_tag 'subject_type', "All", false, class: "subject_type", id: "all_sub", style: "margin-left: 13px;" %> <o class="select-title">All Subjects</o>
+        </div>
+        <div class="table-bar" style="margin-top: 20px">
+          <span style="font-size:16px; padding-left:5px"> <span class="fa fa-file-archive-o"></span> File Type: </span>
+          <hr>
+          <%= radio_button_tag 'signal_type', "seizure", false, class: "signal_type", id: "signal_type"  %> <o class="select-title">Seizure</o>
+          <%= radio_button_tag 'signal_type', "non-seizure", false, class: "signal_type", id: "non_signal_type", style: "margin-left: 13px;" %> <o class="select-title">Non-seizure</o>
+          <%= radio_button_tag 'signal_type', "both", true, class: "signal_type", id: "both_sig", style: "margin-left: 13px;" %> <o class="select-title">Both</o>
+        </div>
+        <div class="table-bar" style="margin-top: 20px">
+          <span style="font-size:16px; padding-left:5px"> <span class="fa fa-tags"></span> Channel Type: </span>
+          <hr>
+          <%= radio_button_tag 'chan_type', "S", true, class: "chan_type", id: "selected_chan"  %> <o class="select-title">Selected Channel(s)</o>
+          <%= radio_button_tag 'chan_type', "A", false, class: "chan_type", id: "all_chan", style: "margin-left: 13px;" %> <o class="select-title">All Channels</o>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="fancy-btn fancy-btn-blue" id="download_ok">OK</button>
+        <button type="button" class="fancy-btn " data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // $(".filter-reresh").click(function(){
+  //   queryFunc();
+  // });
+
+ var isDocReady = false;
+
+  $(document).ready(function() {
+    setInterval(function() {
+      if(isDocReady){
+        txtFile = <%= @progress_file.to_json.html_safe %>;
+        var str = ""
+        $.ajax({
+            url: txtFile,
+            success: function (file_content) {
+              file_content = file_content.trim();
+              if(file_content.length > 0){
+                $('#progress-bar-content').css("width",parseFloat(file_content)+"%"); 
+                $("#progress-bar-content").attr("aria-valuenow",parseFloat(file_content));
+                $("#progress-bar-content").html(parseFloat(file_content)+"%");
+              }
+            }
+        });
+      }
+    }, 1000);
+  });
+
+
+  $("#query_download").click(function(){
+    $("#download_modal").modal("show");
+  });
+
+  $("#download_ok").click(function(){
+    isDocReady = true;
+    $('#progress-bar-content').css("width","0%");
+    $("#progress-bar-content").attr("aria-valuenow",0);
+    $("#progress-bar-content").html("0%");
+    var sig_type = $('input:radio[name=signal_type]:checked').val().trim();
+    var signal_type = []
+    if(sig_type == "both"){
+      signal_type.push("seizure");
+      signal_type.push("non-seizure");
+    }else {
+      signal_type.push(sig_type);
+    }
+
+    var subject_type = $('input:radio[name=subject_type]:checked').val().trim();
+    if(subject_type == "All"){
+      var data = $('#all-table').bootstrapTable('getData', false);
+      var partient_ids = [];
+      var channel_labels = [];
+      data.forEach(function(d) {
+        partient_ids.push(d.patient_id);
+        channel_labels.push(d.channel_labels.join(','));
+      });
+    }
+    else{
+      if($('table tr').has('input[name="cbox"]:checked').size() < 1){
+        alert("No selected subjects");
+        return;
+      }
+      var partient_ids = $('table tr').has('input[name="cbox"]:checked').map(function() {
+        return $(this).children().eq(1).text().trim();
+        }).get();
+      var chan_type = $('input:radio[name=chan_type]:checked').val().trim();
+      if(chan_type == "S"){
+        var channel_labels = $('table tr').has('input[name="cbox"]:checked').map(function() {
+          return $(this).children().last().children().first().attr("value");
+        }).get();
+      }else{
+        var channel_labels = $('table tr').has('input[name="cbox"]:checked').map(function() {
+          return "All";
+        }).get();
+      }
+    }
+    $("#progress-bar").css("display","");
+    $.ajax({
+      type: 'POST',
+      dataType: 'script',
+      beforeSend: $.rails.CSRFProtection,
+      url: "<%= download_data_queries_path %>",
+      data: { signal_type: signal_type,partient_ids: partient_ids, channel_labels: channel_labels},
+      success: function () {
+        isDocReady = false;
+      }
+    });
+  });
+
+  $(document).on("click",".signal-show",function(){
+    var patient_id = $(this).parent().parent().children().eq(1).text().trim();
+    var seizure_id = $(this).parent().parent().children().last().children().first().attr("value");
+    var channel_label = $(this).parent().parent().children().eq(8).children().first().attr("value").trim();
+    var path = $(this).parent().parent().children().last().children().first().attr("data-href")
+    window.open(path+"?patient_id="+patient_id+"&seizure_id="+seizure_id+"&channel_label="+channel_label);
+  });
+
+  $(document).on("click",".sub-show",function(){
+    var patient_id = $(this).parent().parent().children().eq(1).text().trim();
+    var filters_params = {};
+    $(".filter-name").each(function(){
+      value = $(this).attr("value").trim();
+      category = $(this).attr("category").trim();
+      if (category in filters_params)
+        filters_params[category].push(value);
+      else
+        filters_params[category] = [value];
+    });
+    $("#loading-sign-sub-each").css("display","");
+    $.ajax({
+      type: 'POST',
+      dataType: 'script',
+      beforeSend: $.rails.CSRFProtection,
+      url: "<%= each_sub_query_refresh_queries_path %>",
+      data: { patient_id:patient_id, filters_params: filters_params},
+    });
+  });
+
+  function queryFunc(){
+    var filters_params = {};
+    $(".filter-name").each(function(){
+      value = $(this).attr("value").trim();
+      category = $(this).attr("category").trim();
+      if (category in filters_params)
+        filters_params[category].push(value);
+      else
+        filters_params[category] = [value];
+    });
+    $("#loading-sign-sub").css("display","");
+    var string_input = $("#subject_name_search").val();
+    $.ajax({
+      type: 'POST',
+      dataType: 'script',
+      beforeSend: $.rails.CSRFProtection,
+      url: "<%= subject_query_refresh_queries_path %>",
+      data: { filters_params: filters_params,string_input:string_input},
+    });
+  }
+
+  $('#sidebarCollapse').on('click', function () {
+    $('#sidebar').toggleClass('side-hide');
+    if($( "#sidebar" ).hasClass( "side-hide" )){
+      $("#sidebarCollapse").removeClass("fa-arrow-circle-left");
+      $("#sidebarCollapse").addClass("fa-arrow-circle-right");
+      $("#content").css("width","100%");
+    }
+    else{
+      $("#sidebarCollapse").removeClass("fa-arrow-circle-right");
+      $("#sidebarCollapse").addClass("fa-arrow-circle-left");
+      $("#content").css("width","83%");
+    }
+  });
+
+  $(".features").click(function(){
+    var text = $(this).text().trim();
+    var category = $(this).attr("category").trim();
+    var colors = <%= @colors_global.html_safe %>
+    if(!checkFiltersExsit(text)){
+      $("#filters-list").append("<span class='filters' style='background-color: " + colors[category] + "'><span class='filter-name' category='" + category + "' value='" + text + "'> "+ text + " </span> <span class='filter-vertical'></span> <span class='fa fa-remove filters-remove'><span></span>");
+      queryFunc();
+    }
+  });
+
+  $("#add-age").click(function(){
+    var id = "age-range-bar";
+    var suffix = " years";
+    addSliderRangeToFilters(id,suffix);
+  });
+
+  $("#add-duration").click(function(){
+    var id = "duration-range-bar";
+    var suffix = "s";
+    addSliderRangeToFilters(id,suffix);
+  });
+  
+
+  $(document).on("click",".filters-remove",function(){
+    $(this).parent().remove();
+    queryFunc();
+  });
+
+  $(".filter-clear").click(function(){
+    $("#filters-list").empty();
+    queryFunc();
+  });
+
+  function checkFiltersExsit(name){
+    var filter_names = [];
+    $(".filter-name").each(function(){
+      filter_names.push($(this).text().trim());
+    });
+    return filter_names.includes(name);
+  }
+
+  function addSliderRangeToFilters(id,suffix){
+    var value = $('#'+id).slider('getValue');
+    var text = (value[0] + "-" + value[1] + suffix).trim();
+    var category = $('#'+id).attr("category").trim();
+    var colors = <%= @colors_global.html_safe %>
+    if(!checkFiltersExsit(text)){
+      $("#filters-list").append("<span class='filters' style='background-color: " + colors[category] + "'><span class='filter-name' category='" + category + "' value='" + value + "'> "+ text + " </span> <span class='filter-vertical'></span> <span class='fa fa-remove filters-remove'><span></span>");
+      queryFunc();
+    }
+  }
+
+  // $(document).ready(function(){
+  //   $('[data-toggle="tooltip"]').tooltip(); 
+  // });
+</script>

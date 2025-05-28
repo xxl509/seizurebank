@@ -1,0 +1,314 @@
+<div style="margin:10px">
+  <span style="font-size:16px; padding-left:5px"> <span class="fa fa-heartbeat"></span>  Signals: <span class="query-res-num"><span id="patient_id" seizure=<%= @seizure_id%> ><%= @patient_id %></span>
+  <span class="divider-vertical"></span>
+  <span id="is_seizure" ><%= @is_seizure %></span>
+  <span class="divider-vertical"></span>
+  <span style="padding-left:5px"> Spectrum: </span>
+  <%= select_tag "spect_chan", options_for_select(['None',"Frequency","Time-Frequency"]), style: "height: auto;", id: "spect_chan", class: "styled-select", onchange: "clearSpectrogram()" %>
+  <span class="divider-vertical"></span>
+  <span>Band-pass Filter: </span>
+  <%= select_tag "low_freq", options_for_select(@freqList,"1Hz"),prompt: "",style: "height: auto;", id: "low_freq", class: "styled-select"%>
+  <span style="padding-left: 10px; padding-right: 10px">to</span>
+  <%= select_tag "high_freq", options_for_select(@freqList,"70Hz"),prompt: "",style: "height: auto;", id: "high_freq", class: "styled-select"%>
+  <span class="fa fa-check-circle" id="bandpass_filter" style="padding-left: 10px; cursor:pointer"></span>
+  <span class="divider-vertical"></span>
+  <span>Runs Rendering: </span>
+  <%= select_tag "runs_rendering", options_for_select(@montages_type, ""),prompt: "",onchange: "selectRunRender()",id: "runs_render", class: "styled-select-flex"%>
+</div>
+<div style="margin:15px;font-size:16px;">
+  <span class="fa fa-reorder"></span>
+  <span style="padding-left:5px"> Channel: </span>
+  <% if false %>
+    <%= select_tag "signal_chan", options_for_select(@channels,@channel_label), selected: true, style: "height: auto;", id: "signal_chan", class: "styled-select",onchange: "selectChannel()" %>
+  <% end %>
+  <span id="chan_show"><%= @channel_labels %></span><span id="change_chan" class="fa fa-edit" style="cursor:pointer;padding-left:10px"></span>
+  <hr>
+  <%= render 'queries/signal_show'%>
+  <div class="spectrogram-result">
+    <span id="spec_chan_show"></span>
+    <div class = "col-sm-12" id="spectrogram_show" style="padding: 0px 0px 10px 0px">
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="chan_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document" style="width:900px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Select Channels</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container" style="width:auto">
+        <div class="col-sm-3">
+          <div style="font-size:12px">
+            <o class="select-title" id="selectionText">Select Signal Channel</o>
+            <span class="select-title" id="addMontage" style="padding-left: 10px;cursor: pointer"><span class='fa fa-pencil-square-o'></span></span>
+          </div>
+          <div style="padding-top:10px">
+            <%= select_tag "signal_chan", options_for_select(@channels,@channel_labels), style: "height: 330px;width: 150px", id: "signal_chan", class: "styled-select",multiple: true %>
+            <span class="col-sm-5" id='del-chan' style="color: #3498db;padding-left: 2.5px;padding-right: 0px;font-size:11px;cursor:pointer"><span class='fa fa-times' style="zoom:0.6">&nbsp;</span >Remove </span>
+          </div>
+        </div>
+        <div class="col-sm-9">
+          <span class="seperator"></span>
+          <div id="create-montage-area" style="display">
+            <center>Add Montage</center>
+            <div id="montage-pic" style="padding-top: 20px">
+              <div class="col-sm-5" style="float: right">
+                <div>
+                  <%= select_tag "Montage subtypes", options_for_select(@montages_type),onchange: "selectMontageRuns()",id: "montages_type", class: "col-sm-12 styled-select-flex"%>
+                  <center>
+                    <span class='fa fa-angle-double-down' style="padding-top: 5px"><span>
+                  </center>
+                </div> 
+                <div style="margin-top:5px">
+                  <%= select_tag "montage_add", options_for_select(@runs[0], ""),style: "height: 175px; width:100%;padding: 0px", id: "montage_add", class: "select-multi", multiple: true %>
+                </div>
+                <div>
+                  <span class="col-sm-4" id='add-montage-in-subtype' style="color: #3498db;padding-left: 2.5px;padding-right: 0px;font-size:11px;cursor:pointer"><span class='fa fa-plus' style="zoom:0.6">&nbsp;</span >Add </span>
+                  <span class="col-sm-4" id='del-montage-in-subtype' style="color: #3498db;padding-left: 2.5px;padding-right: 0px;font-size:11px;cursor:pointer"><span class='fa fa-remove' style="zoom:0.6">&nbsp;</span >Remove </span>
+                  <span class="col-sm-4" id='clear-montage-in-subtype' style="color: #3498db;float:right;font-size:11px;cursor:pointer"><span class='fa fa-minus-square-o' style="zoom:0.6">&nbsp;</span >Clear </span>
+                </div>
+                <div style="padding-top: 24px">
+                  <div class="col-sm-4" style="padding: 0px;">
+                    <o class="select-title">Channel 1</o>
+                    <div class="boder-text" id="montage_chan1" style="display: none"></div>
+                    <%= select_tag "montage_chan1", options_for_select(@channels, ""), id: "sig_chan1", class: "styled-select" %>
+                  </div>
+                  <div class="col-sm-4" style="float: center">
+                    <center><span class="fa fa-exchange" id="montage-exchange" 
+                  onclick="montageExchange()" style="color: #3498db;"></span></center>
+                    <center>—</center>
+                  </div>
+                  <div class="col-sm-4" style="padding: 0px;">
+                    <o class="select-title">Channel 2</o>
+                    <div class="boder-text" id="montage_chan2" style="display: none"></div>
+                    <%= select_tag "sig_chan2", options_for_select(@channels, ""), id: "sig_chan2", class: "styled-select" %>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <center>
+                <button type="button" class="fancy-btn fancy-btn-blue" id="create-subtype-ok-btn">Create</button>
+                <button type="button" class="fancy-btn" id="cancel-create-subtype">Cancel</button>
+              </center>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="fancy-btn fancy-btn-blue" data-dismiss="modal" id="chan_select_btn">OK</button>
+        <button type="button" class="fancy-btn" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  montageDraw();
+
+  $("#bandpass_filter").click(function(){
+    var channel_option_all = document.getElementById("signal_chan").selectedOptions;
+    var channel = [];
+    if(channel_option_all.length == 0){
+      alert("Please select channel");
+    }
+    else{
+      chan_show = ""
+      for( var i = 0; i < channel_option_all.length; i++){
+        channel.push(channel_option_all[i].value);
+        chan_show = chan_show + channel_option_all[i].value + ","
+      }
+      chan_show = chan_show.slice(0, -1);
+      var patient_id = $("#patient_id").text().trim();
+      var seizure_id = $("#patient_id").attr("seizure");
+      var filter_low = document.getElementById("low_freq").value;
+      var filter_high = document.getElementById("high_freq").value;
+      $.ajax({
+        type: 'POST',
+        dataType: 'script',
+        beforeSend: $.rails.CSRFProtection,
+        url: "<%= singal_show_refresh_queries_path %>",
+        data: { channel: channel,patient_id:patient_id,seizure_id:seizure_id,filter_low:filter_low, filter_high:filter_high},
+        success: function () {
+          $("#chan_show").text(chan_show);
+        }
+      });
+    }
+  });
+
+  function selectRunRender(){
+    montages_type = $('#runs_render').val();
+    var id = parseInt(montages_type.split(" ")[1]);
+    var runs = <%= @runs.to_json.html_safe %>;
+    var channel_option_all = runs[id-1]; 
+    var channel = [];
+    chan_show = ""
+    for( var i = 0; i < channel_option_all.length; i++){
+      channel.push(channel_option_all[i]);
+      chan_show = chan_show + channel_option_all[i] + ","
+    }
+    chan_show = chan_show.slice(0, -1);
+    var patient_id = $("#patient_id").text().trim();
+    var seizure_id = $("#patient_id").attr("seizure");
+    var filter_low = document.getElementById("low_freq").value;
+    var filter_high = document.getElementById("high_freq").value;
+    $.ajax({
+      type: 'POST',
+      dataType: 'script',
+      beforeSend: $.rails.CSRFProtection,
+      url: "<%= singal_show_refresh_queries_path %>",
+      data: { channel: channel,patient_id:patient_id,seizure_id:seizure_id,filter_low:filter_low, filter_high:filter_high},
+      success: function () {
+        $("#chan_show").text(chan_show);
+      }
+    });
+  }
+
+  function selectMontageRuns(){
+    $('#montage_add').empty();
+    montages_type = $('#montages_type').val();
+    var id = parseInt(montages_type.split(" ")[1]);
+    var runs = <%= @runs.to_json.html_safe %>;
+    var montages = runs[id-1]; 
+    for (var i = 0; i < montages.length; i++) {
+      $("#montage_add").append($("<option></option>").attr("value",montages[i]).text(montages[i])); 
+    }
+  }
+
+  $("#change_chan").click(function(){
+    $("#chan_modal").modal("show");
+  });
+
+  $("#addMontage").click(function(){
+    $("#create-montage-area").css("display","");
+    $("#signal_chan").css("height","330px");
+    $("#signal_chan").css("width","150px");
+  });
+
+  $("#cancel-create-subtype").click(function(){
+    $("#create-montage-area").css("display","none");
+    $("#signal_chan").css("height","150px");
+    $("#signal_chan").css("width","800px");
+  });
+
+  $('#add-montage-in-subtype').click(function(){
+    chan1 = $("#sig_chan1").find(":selected").text().toLowerCase();
+    chan2 = $("#sig_chan2").find(":selected").text().toLowerCase();
+    if(chan1 != "" && chan2 != ""){
+      montageToAdd = chan1.trim()+"—"+chan2.trim();
+      var exists = false;
+      $('#montage_add option').each(function(){
+          if (this.value == montageToAdd) {
+              exists = true;
+              return false;
+          }
+      });
+      if(!exists)
+        $("#montage_add").append($("<option>"+ montageToAdd+"</option>"));
+    }
+  });
+
+  $('#clear-montage-in-subtype').click(function(){
+    $('#montage_add').empty();
+  });
+
+  $('#del-montage-remove-subtype').click(function(){
+    $("#montage_add option:selected").remove();
+  });
+
+  $('#del-chan').click(function(){
+    $("#signal_chan option:selected").remove();
+  });
+
+  $("#create-subtype-ok-btn").click(function(){
+    var montages = document.getElementById("montage_add");
+    if(montages.length == 0)
+      alert("There is no new montage");
+    else{
+      for (var i = montages.length - 1; i >= 0 ; i--) {
+        montageToAdd = montages[i].text
+        var exists = false;
+        $('#signal_chan option').each(function(){
+            if (this.value == montageToAdd) {
+                exists = true;
+                return false;
+            }
+        });
+        if(!exists)
+          $("#signal_chan option:first").after($("<option>"+ montageToAdd+"</option>"));
+      }
+    }
+      
+  });
+
+  function montageExchange(){
+    var channel_1 = document.getElementById("sig_chan1").value;
+    var channel_2 = document.getElementById("sig_chan2").value;
+    $("#sig_chan1").val(channel_2);
+    $("#sig_chan2").val(channel_1);
+  }
+
+	$("#chan_select_btn").click(function (){
+		var channel_option_all = document.getElementById("signal_chan").selectedOptions;
+    var channel = [];
+    if(channel_option_all.length == 0){
+      alert("Please select channel");
+    }
+    else{
+      chan_show = ""
+      for( var i = 0; i < channel_option_all.length; i++){
+        channel.push(channel_option_all[i].value);
+        chan_show = chan_show + channel_option_all[i].value + ","
+      }
+      chan_show = chan_show.slice(0, -1);
+      var patient_id = $("#patient_id").text().trim();
+      var seizure_id = $("#patient_id").attr("seizure");
+      var filter_low = document.getElementById("low_freq").value;
+      var filter_high = document.getElementById("high_freq").value;
+      $.ajax({
+        type: 'POST',
+        dataType: 'script',
+        beforeSend: $.rails.CSRFProtection,
+        url: "<%= singal_show_refresh_queries_path %>",
+        data: { channel: channel,patient_id:patient_id,seizure_id:seizure_id,filter_low:filter_low, filter_high:filter_high},
+        success: function () {
+          $("#chan_show").text(chan_show);
+        }
+      });
+    }
+	});
+
+  function selectSpectrogram(channel){
+    var spect_val = document.getElementById("spect_chan").value;
+    if(spect_val != "None"){
+      var channel_option_all = document.getElementById("signal_chan").selectedOptions;
+      if(channel == "All"){
+        alert("Spectrogram only can be applied on single channel");
+        return ;
+      }
+      var patient_id = $("#patient_id").text().trim();
+      var seizure_id = $("#patient_id").attr("seizure");
+      var filter_low = document.getElementById("low_freq").value;
+      var filter_high = document.getElementById("high_freq").value;
+      $.ajax({
+        type: 'POST',
+        dataType: 'script',
+        beforeSend: $.rails.CSRFProtection,
+        url: "<%= spectrogram_show_refresh_queries_path %>",
+        data: { channel: channel,patient_id:patient_id,seizure_id:seizure_id,spect_val:spect_val,filter_low:filter_low, filter_high:filter_high},
+      });
+    }else {
+      $("#spectrogram_show").empty();
+    }
+  }
+
+  function clearSpectrogram(){
+    $("#spectrogram_show").empty();
+    $("#spec_chan_show").empty();
+  }
+
+</script>
+

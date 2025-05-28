@@ -1,0 +1,15 @@
+<div class="signal-result" style="margin-top: 10px;">
+  <div class = "col-sm-12" id="signal_show" style="padding: 30px 0px 10px 0px">
+	</div>
+</div>
+
+
+
+
+<script>
+
+// signal_draw_traditional(<%= @fs.to_json.html_safe %>,<%= @units.to_json.html_safe %>, <%= @start_rec_time.to_json.html_safe %>,<%= @input_file_path.to_json.html_safe%>);
+
+signal_draw_traditional(<%= @fs.to_json.html_safe %>,<%= @units.to_json.html_safe %>, <%= @start_rec_time.to_json.html_safe %>,<%= @data.to_json.html_safe%>);
+
+</script>

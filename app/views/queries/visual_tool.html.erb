@@ -1,0 +1,472 @@
+<div class="container">
+  <h2>Upload your own signal file</h2><span id="upload_file_name"></span>
+  <%= file_field_tag :xml_file_path, style: "font-size: 12px", onchange: "uploadComfirm(this)", id: "upload_sig", onClick: "if(this.form != null) this.form.reset()"%>
+
+  <div class="table-bar" style="margin-top: 15px">
+    <span style="font-size:16px; padding-left:5px"> 
+      <span class="fa fa-table"></span>
+      Signal details 
+      <span class="render_signal" id="render_signal" style="float: right;cursor: pointer">
+        <span class="fa fa-line-chart"></span> Show 
+      </span>
+    </span>
+    <hr>
+    <div class="query-result" style="margin-top: 10px">
+      <table id="signal-table"  data-show-header="true" data-pagination="true" data-id-field="name" data-page-list="[5, 10, 25, 50, 100, ALL]" data-page-size="5">
+        <thead>
+        <tr>
+            <th data-field="seizure_type" data-sortable="true">Event Type</th>
+            <th data-field="channel" data-sortable="true">Channel Label</th>
+            <th data-field="duration" data-sortable="true">Duration (s)</th>
+            <th data-field="fs" data-sortable="true">Fs (Hz)</th>
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="signal-result" style="margin-top: 10px; margin-left: -25px">
+    <div class = "col-sm-12" id="signal_show" style="padding: 30px 0px 10px 0px">
+    </div>
+  </div>
+</div>
+
+
+
+<div class="modal fade" id="upload_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="header_title">
+          <span>Select Exporting Type</span>
+        </h4>
+      </div>
+      <div class="modal-body">
+        <div class="table-bar">
+          <span style="font-size:16px; padding-left:5px"> <span class="fa fa-file-text-o"></span> File Name: 
+            <span id="upload_file_name_modal"></span>
+          </span>
+        </div>
+        <br>
+        <div class="table-bar">
+          <span style="font-size:16px; padding-left:5px"> <span class="fa fa-info-circle"></span> File Size: 
+            <span id="upload_file_size"></span>
+          </span>
+        </div>
+        <br>
+        <div class="table-bar" id="upload-progress-bar" style="display: none">
+          <span style="font-size:16px; padding-left:5px"> <span class="fa fa-spinner fa-spin fa-1x fa-fw loading-icon"></span></span> Uploading </span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="fancy-btn fancy-btn-blue" id="upload_submit" onclick="UploadSubmit()">Upload</button>
+        <button type="button" class="fancy-btn " data-dismiss="modal" onclick='$("#upload_sig").val("");'>Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="render_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="header_title">
+          <span>Select Render Type</span>
+        </h4>
+      </div>
+      <div class="modal-body">
+        <div class="table-bar">
+          <div style="font-size:12px">
+            <o class="select-title" id="selectionText">Select Signal Channel</o>
+            <span class="divider-vertical"></span>
+            <span>Or Runs Rendering: </span>
+            <%= select_tag "runs_rendering", options_for_select(@montages_type, "Run 1"),prompt: "",onchange: "selectRunRender()",id: "runs_render", class: "styled-select-flex"%>
+            <span id="ori_montage" value="montage" stype="display: none">
+          </div>
+          <hr>
+          <%= select_tag "signal_chan", options_for_select(@runs[0],@runs[0]), style: "height: 150px; width: 300px", id: "signal_chan", class: "styled-select",multiple: true %>
+        </div>
+        <div class="table-bar" style="margin-top: 20px">
+          <%= radio_button_tag 'render_type', "Selected", false, class: "render_type", id: "selected_chan" %> <o class="select-title">Selected Channel(s)</o>
+          <%= radio_button_tag 'render_type', "All", true, class: "render_type", id: "all_chan", onclick: "selectAllChannels()", style: "margin-left: 13px;" %> <o class="select-title">All Channels</o>
+        </div>
+
+        <div class="table-bar" style="margin-top: 20px">
+          <div id="highFreq">
+            <p class="select-title">High Pass - Low Cutoff</p>
+            <%= select_tag "low_freq", options_for_select(@freqList,"1Hz"),prompt: "",style: "height: auto;", id: "low_freq", class: "styled-select"%>
+            <p class="signal_tag_text">&nbsp;default: 1Hz</p>
+          </div>
+          <div id="lowFreq" style="padding-top: 0px">
+            <p class="select-title">Low Pass - High Cutoff</p>
+            <%= select_tag "high_freq", options_for_select(@freqList,"15Hz"),prompt: "",style: "height: auto;", id: "high_freq", class: "styled-select"%>
+            <p class="signal_tag_text">&nbsp; default: 70Hz</p>
+          </div>
+          <input type="checkbox" checked="true" name="auto_filter" value="T" class="viewStyled" id="auto_filter" style="height: 10px;" onchange="switchFilter(this)">
+          <label class="viewStyled" for="auto_filter" style="width: 20%;font-weight: 300">Filter</label>
+        </div>
+        <div class="table-bar" id="render-progress-bar" style="margin-top: 20px;display: none">
+          <span style="font-size:16px; padding-left:5px"> <span class="fa fa-spinner fa-spin fa-1x fa-fw loading-icon"></span></span> Rendering </span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="fancy-btn fancy-btn-blue" id="render_ok">OK</button><span style="display: none" id="render_ok_sub"></span>
+        <button type="button" class="fancy-btn " data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- <script src="/app/assets/javascripts/fili.min.js"></script> -->
+
+<script>
+var file_upload;
+var data = [];
+var metadata = [];
+
+$('#signal-table').bootstrapTable({
+  data: metadata
+});
+
+$("#render_signal").click(function(){
+  $("#render_modal").modal("show");
+  $("#runs_render").val("Original Channels");
+  selectRunRender();
+});
+
+$(document).on("click","#cbox_all",function(){
+  table = $("#signal-table");
+  if($('#cbox_all').is(':checked')){
+    $(".cbox",table).prop('checked', true);
+  }
+  else{
+    $(".cbox",table).prop('checked', false);
+  }
+});
+
+$("#render_ok").click(function(){
+  $("#render-progress-bar").css("display","");
+  $.ajax({
+      url: "",
+      success: function () {
+        renderSignal();
+      }
+  }); 
+});
+
+function selectAllChannels(){
+  $('#signal_chan option').prop('selected', true);
+}
+
+function switchFilter(checkboxElem){
+  annotation_show_only = $(checkboxElem).is(':checked');
+  if (annotation_show_only){
+    $("#low_freq").prop("disabled", false);
+    $("#high_freq").prop("disabled", false);
+    $("#low_freq").val("1Hz");
+    $("#high_freq").val("70Hz");
+    $(checkboxElem).attr("value","T");
+  }
+  else {
+    $("#high_freq").val("");
+    $("#low_freq").val("");
+    $("#low_freq").prop("disabled", true);
+    $("#high_freq").prop("disabled", true);
+    $(checkboxElem).attr("value","F")
+  }
+
+}
+
+function renderSignal(){
+  $("#signal_show").empty();
+  var renderType = $('input:radio[name=render_type]:checked').val().trim();
+  var startRecTime = "00:00:00";
+  renderData = [];
+  units = [];
+  strs = [];
+  var mode = $("#ori_montage").attr("value").trim();
+  filter_on = $("#auto_filter").attr("value").trim();
+
+  if(filter_on == "T"){
+    var f_low = document.getElementById("low_freq").value;
+    var f_high = document.getElementById("high_freq").value;
+    f_low = parseFloat(f_low.replace("Hz",""));
+    f_high = parseFloat(f_high.replace("Hz",""));
+    var firCalculator = new Fili.FirCoeffs();
+    var filter_order = 100;
+  }
+
+  if(mode == "original"){
+
+    var channelOpts = [];
+    if(renderType == "All"){
+      channelOpts = document.getElementById("signal_chan").options;
+    }else{
+      channelOpts = document.getElementById("signal_chan").selectedOptions;
+    }
+    if(channelOpts.length == 0){
+      alert("Please select channel");
+      $("#render-progress-bar").css("display","none");
+      return;
+    }
+    var channelIds = [];
+    for(i = 0; i < channelOpts.length; i++){
+      channelIds.push(parseInt(channelOpts[i].value));
+    }
+    var channelNames = [];
+    for(i = 0; i < channelOpts.length; i++){
+      channelNames.push(channelOpts[i].text);
+    }
+    units = Array(channelIds.length).fill("uv");
+    var sigLen = data["signals"][0].length;
+    var annotationLabels = data["annotationLabels"];
+    var annotations = data["annotations"];
+    signals = []
+    for(j = 0; j < channelIds.length; j++){
+      id = channelIds[j];
+      sig = data["signals"][id];
+      fs = data["fsArr"][id];
+      if(filter_on == "T" && !(channelNames[j].includes("label") || channelNames[j].includes("probability"))){
+        filterCoeffs = firCalculator.bandpass({
+          order: filter_order, // filter order
+          Fs: fs, // sampling frequency
+          F1: f_low,
+          F2: f_high
+        });
+        firFilter = new Fili.FirFilter(filterCoeffs);
+        sig = firFilter.multiStep(sig);
+      }
+      signals.push(sig);
+    }
+    for(i = 0; i < sigLen; i++){
+      tmp = {};
+      tmp["index"] = (i+1).pad(10);
+      for(j = 0; j < channelIds.length; j++){
+        id = channelIds[j];
+        tmp[data["channels"][id]] = signals[j][i];
+      }
+      for(j = 0; j < annotationLabels.length; j++){
+        annoLabel = "Annotation_" + annotationLabels[j].split("_")[0] + "_AllChannels";
+        tmp[annoLabel] = data["annotations"][j][i];
+      }
+      // str = JSON.stringify(tmp);
+      // strs.push(str);
+      renderData.push(tmp);
+    };   
+  }
+  else{
+    var channelOpts = [];
+    if(renderType == "All"){
+       channelOpts = document.getElementById("signal_chan").options;
+    }else{
+      channelOpts = document.getElementById("signal_chan").selectedOptions;
+    }
+    if(channelOpts.length == 0){
+      alert("Please select a channel");
+      $("#render-progress-bar").css("display","none");
+      return;
+    }
+    var channelIds = [];
+    var chanOri = data["channels"];
+    var annotationLabels = data["annotationLabels"];
+    var annotations = data["annotations"];
+    for(i = 0; i < channelOpts.length; i++){
+      channelIds.push(channelOpts[i].value);
+    }
+    units = Array(channelIds.length).fill("uv");
+    // fs = data["fsArr"][0];
+    var sigLen = data["signals"][0].length;
+    signals = []
+    for(j = 0; j < channelIds.length; j++){
+      chanLabel = channelIds[j].split("—");
+      id1 = chanOri.indexOf(chanLabel[0]);
+      id2 = chanOri.indexOf(chanLabel[1]); 
+      if(id1 < 0 || id2 < 0)
+        continue;
+      sig = data["signals"][id1].map(function (num, idx) {
+        return num - data["signals"][id2][idx];
+      });
+
+      fs = data["fsArr"][id1];
+      if(filter_on == "T" && !(channelIds[j].includes('label') || channelIds[j].includes("probability"))){
+        filterCoeffs = firCalculator.bandpass({
+          order: filter_order, // filter order
+          Fs: fs, // sampling frequency
+          F1: f_low,
+          F2: f_high
+        });
+        firFilter = new Fili.FirFilter(filterCoeffs);
+        sig = firFilter.multiStep(sig);
+      }
+      signals.push(sig);
+      // var hiddenElement = document.createElement('a');
+
+      // hiddenElement.href = 'data:attachment/text,' + encodeURI(sig);
+      // hiddenElement.target = '_blank';
+      // hiddenElement.download = 'myFile.txt';
+      // hiddenElement.click();
+      // dasd
+    }
+    for(i = 0; i < sigLen; i++){
+      tmp = {};
+      tmp["index"] = (i+1).pad(10);
+      for(j = 0; j < signals.length; j++){
+
+        tmp[channelIds[j]] = signals[j][i];
+      }
+      for(j = 0; j < annotationLabels.length; j++){
+        annoLabel = "Annotation_" + annotationLabels[j].split("_")[0] + "_AllChannels";
+        tmp[annoLabel] = data["annotations"][j][i];
+      }
+      // str = JSON.stringify(tmp);
+      // strs.push(str);
+      renderData.push(tmp);
+    };
+  }
+  signal_draw_traditional_pges(fs,units,startRecTime,renderData);
+  // signal_draw_traditional_stand_alone(fs,units,startRecTime,renderData);
+  $("#render_modal").modal("hide");
+  $("#render-progress-bar").css("display","none");
+}
+
+function uploadComfirm(file){
+  if(file == null){
+    file_upload = null;
+    return;
+  }
+  fileName = file.files[0].name;
+  type = fileName.split(".");
+  type = type[type.length-1];
+  fileSize = (file.files[0].size/1024).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')
+  if (type != "csv"){
+    alert("Warning: Must be *.csv file")
+    $("#upload_sig").val("");
+    file_upload = null;
+    return;
+  }
+  $("#upload_modal").modal("show");
+  $("#upload_file_name").html(fileName);
+  $("#upload_file_name_modal").html(fileName);
+  $("#upload_file_size").html(fileSize + " KB");
+  file_upload = file;
+}
+
+function UploadSubmit(){
+  $("#signal_show").empty();
+  $('#signal-table').bootstrapTable('removeAll');
+
+  data = [];
+  metadata = [];
+  var file_path = file_upload.files[0];
+  var reader = new FileReader();
+  var units = [];
+  channels = [];
+  $("#upload-progress-bar").css("display","");
+  reader.onload = function(e) {
+    content = reader.result;
+    csvDoc = $.csv.toArrays(content);
+    csvDoc.shift();
+    fs = csvDoc[0][4];
+
+    var eventTypes = csvDoc.map(x => x[0]);
+    eventTypes = eventTypes.map(x => x.trim().toLowerCase());
+
+    // var startTimes = csvDoc.map(x => x[1]);
+    // startTimes = startTimes.map(x => x.trim().toLowerCase());
+    startTimes = 0;
+
+    var durations = csvDoc.map(x => x[1]);
+    durations = durations.map(x => parseFloat(x.trim()));
+
+    var channels = csvDoc.map(x => x[3]);
+    channels = channels.map(x => x.trim().toLowerCase());
+
+    var fsArr = csvDoc.map(x => x[4]);
+    fsArr = fsArr.map(x => parseFloat(x.trim()));
+
+    var signals = csvDoc.map(x => x[x.length - 1]);
+    signals = signals.map(x => x.trim());
+    signals = signals.map(x => x.split(",").map(x => parseFloat(x.trim())));
+
+    var annotations = [];
+    var annotationLabels =[];
+    var anno_num = 0;
+
+    for(var i_c = channels.length - 1; i_c >= 0; i_c--){
+      if(channels[i_c].includes("pges") || channels[i_c].includes("annotation")){
+        annotationLabels.push(channels[i_c]);
+        annotations.push(signals[i_c]);
+        anno_num = anno_num+1;
+      }
+    }
+    channels = channels.slice(0,channels.length-anno_num);
+    signals = signals.slice(0,signals.length-anno_num);
+
+    data["eventTypes"] = eventTypes;
+    data["startTimes"] = startTimes;
+    data["durations"] = durations;
+    data["channels"] = channels;
+    data["fsArr"] = fsArr;
+    data["signals"] = signals;
+    data["annotations"] = annotations;
+    data["annotationLabels"] = annotationLabels;
+    
+    for(j = 0; j < channels.length; j++){
+      tmp = {};
+      tmp["seizure_type"] = eventTypes[j];
+      tmp["channel"] = channels[j];
+      tmp["duration"] = durations[j];
+      tmp["fs"] = fsArr[j];
+      metadata.push(tmp);
+      // $("#signal_chan").append(new Option(channels[j],j));
+    }
+
+    $('#signal-table').bootstrapTable("append", metadata);
+    $("#upload-progress-bar").css("display","none");
+    $("#upload_modal").modal("hide"); 
+    $("#upload_sig").val("");
+    file_upload = null;
+
+  }
+  reader.readAsText(file_path); 
+}
+
+
+function selectRunRender(){
+  montages_type = $('#runs_render').val();
+  var id = parseInt(montages_type.split(" ")[1]);
+  if(montages_type == "Original Channels"){
+    var channel_option_all = Array.from(new Set(data["channels"]));
+    $("#all_chan").prop("checked", true);
+    $("#ori_montage").attr("value","original");
+    $('#signal_chan').empty();
+    if(channel_option_all == null)
+      return;
+    for(j = 0; j < channel_option_all.length; j++){
+      $("#signal_chan").append(new Option(channel_option_all[j],j));
+    }
+  }else{
+    var runs = <%= @runs.to_json.html_safe %>;
+    var channel_option_all = runs[id-1]; 
+    $("#all_chan").prop("checked", true);
+    $("#ori_montage").attr("value","montage");
+    $('#signal_chan').empty();
+    for(j = 0; j < channel_option_all.length; j++){
+      $("#signal_chan").append(new Option(channel_option_all[j],channel_option_all[j]));
+    }
+    $('#signal_chan option').prop('selected', true);
+  }
+}
+
+Number.prototype.pad = function(size) {
+  var s = String(this);
+  while (s.length < (size || 2)) {s = "0" + s;}
+  return s;
+}
+
+</script>

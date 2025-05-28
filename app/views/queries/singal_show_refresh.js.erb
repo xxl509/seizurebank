@@ -1,0 +1,4 @@
+$("#signal_show").empty();
+$("#spectrogram_show").empty();
+$("#spec_chan_show").empty();
+signal_draw_traditional(<%= @fs.to_json.html_safe %>,<%= @units.to_json.html_safe %>, <%= @start_rec_time.to_json.html_safe %>,<%= @data.to_json.html_safe%>);

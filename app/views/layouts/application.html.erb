@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Welcome to SeizureSphere</title>
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <%= csrf_meta_tags %>
+</head>
+<div class="loading-background-whole-page" style="display: none;margin-top:-7px">
+	<center style="margin-top:50px;"><i class="fa fa-spinner fa-spin fa-3x fa-fw loading-icon"></i></center>
+</div>
+<%= render 'layouts/header' %>
+<body data-turbolinks="false">
+<div id='flash-notice'>
+	<%= render partial: "layouts/flash_messages", flash: flash %>
+</div>
+<%= yield %>
+</body>
+</html>

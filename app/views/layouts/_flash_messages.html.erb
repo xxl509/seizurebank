@@ -1,0 +1,22 @@
+<% if !flash.empty? %>
+	<div class="flash-messages-container" style="position: absolute;z-index: 999999;width:100%;text-align: center">
+		<% flash.each do |type, message| %>
+		 <% puts "#{type}-#{message}" %>
+		  <% if message.is_a?(String) %>
+		    <div class="alert-message alert <%= bootstrap_class_for(type) %> ">
+		      <button class="close" data-dismiss="alert">×</button>
+		      <%= message %>
+		    </div>
+		  <% end %>
+		<% end %>
+	</div>
+	<% flash.clear %>
+<% end %>
+
+<script>
+  $(document).ready(function(){
+    setTimeout(function(){
+    $('.flash-messages-container').fadeOut();
+    }, 1000);
+  })
+</script>

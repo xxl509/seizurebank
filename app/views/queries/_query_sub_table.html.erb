@@ -1,0 +1,60 @@
+<div class="table-bar">
+  <span style="font-size:16px; padding-left:5px"> <span class="fa fa-table"></span>
+    Subject's details 
+    <span id="loading-sign-sub-each" class="fa fa-spinner fa-spin fa-fw loading-icon" style="display: none"></span>
+    <% if false %>
+      <span class="query_download" style="float: right;cursor: pointer">
+        <span class="fa fa-cloud-download"></span> Download 
+      </span>
+    <% end %>
+  </span>
+  <hr>
+  <div class="query-result" style="margin-top: 10px">
+    <table id="subject-table"  data-show-header="true" data-pagination="true" data-id-field="name" data-page-list="[5, 10, 25, 50, 100, ALL]" data-page-size="10">
+      <thead>
+      <tr>
+          <th data-field="id" data-sortable="true">#</th>
+          <th data-field="patient_id" data-sortable="true">Patient ID</th>
+          <th data-field="signal_type" data-sortable="true">Signal Type</th>
+          <th data-field="seizure_type" data-sortable="true">Seizure Type</th>
+          <th data-field="channel" data-sortable="true">Channels</th>
+          <th data-field="duration" data-sortable="true">Duration (s)</th>
+          <th data-field="fs" data-sortable="true">Fs(Hz)</th>
+          <th data-field="show" data-formatter="showSigFormatter">Show</th>
+          <!-- <th data-field="download" data-sortable="true" data-formatter="downloadFormatter" >Download</th> -->
+          <th data-field="channel_labels" data-formatter="channelLabelFormatter" class="channel_labels"></th>
+          <th data-field="seizure_id" data-formatter="seizureIdFormatter" class="seizure_id"></th>
+      </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+    var sub_data = [];
+
+    function showSigFormatter(value) {
+      return "<span class='fa fa-line-chart signal-show' style='cursor:pointer'></span>";
+    }
+
+    function downloadFormatter(value) {
+      return "<input class='cbox' type='checkbox' name='cbox'>"
+    }
+
+    function seizureIdFormatter(value) {
+      return '<span class="seizure_id_each" data-href="<%= queries_show_path %>" value="'+ value +'"></span>';
+        // return '<i class="glyphicon glyphicon-cutlery"></i> ' + value;
+    }
+
+    function channelLabelFormatter(value) {
+      return '<span class="channel_label_each" value="'+ value +'"></span>';
+    }
+
+    $(function () {
+        $('#subject-table').bootstrapTable({
+          data: sub_data
+        });
+    });
+</script>

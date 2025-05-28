@@ -1,0 +1,121 @@
+<div class="nav-side-menu" id="sidebar">
+  <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
+  <div class="menu-list">
+    <ul id="menu-content" class="menu-content collapse out">
+      <li>
+        <span class="fa fa-dashboard fa-lg"></span>
+        <%= link_to "Data Description", data_dashboard_path, style:"width: auto; margin-left:10px; color: #000"%>
+      </li>
+
+      <li class="collapse-main-menu">
+        <span id="fa_anno_search"class="fa fa-search" style="padding-bottom:8px;"></span>
+        <%=  text_field_tag "edf_file_name_search","", placeholder: "Search by patient ID", class: "my_search", id: "subject_name_search", onkeyup:"subjectMatching()", style:"width: auto; margin-left:10px"%>
+      </li>
+      
+      <li data-toggle="collapse" data-target="#clinicl_fea" class="collapse-main-menu active" aria-expanded="true">
+          <span class="main-menu"><i class="fa fa-drivers-license fa-lg"></i> Clinical Features <span class="plus"></span></span>
+      </li>
+      <ul class="sub-menu collapse in" id="clinicl_fea" aria-expanded="true">
+        <li data-toggle="collapse" data-target="#age" class="">
+          <span class="arrow"></i> Age <span class="plus"></span></span>
+        </li>
+        <ul class="sub-menu collapse in sub-collapse" id="age">
+          <div class="range-bar">
+            <input id="age-range-bar" category="age" type="text"/>
+            <span class="fa fa-check" id="add-age" style="margin-left: 20px;"></span>
+          </div> 
+        </ul>
+
+        <li data-toggle="collapse" data-target="#gender" class="">
+          <span class="arrow"></i> Gender <span class="plus"></span></span>
+        </li>
+        <ul class="sub-menu collapse in sub-collapse" id="gender">
+          <% @genders_global.each_with_index do|gender,i| %>
+            <li class="features" category="gender" id="gender_<%= i %>"><%= gender %></li>
+          <% end %>
+        </ul>
+
+        <li data-toggle="collapse" data-target="#dataset" class="">
+          <span class="arrow"></i> Dataset <span class="plus"></span></span>
+        </li>
+        <ul class="sub-menu collapse sub-collapse in" id="dataset">
+          <% @datasets.each_with_index do|dataset,i| %>
+            <li class="features" category="dataset" id="dataset_<%= i %>"><%= dataset %></li>
+          <% end %>
+        </ul>
+      </ul>
+      <li data-toggle="collapse" data-target="#signal_fea" class="collapse-main-menu active" aria-expanded="true">
+        <span class="main-menu"><i class="fa fa-heartbeat fa-lg"></i> Signal Features <span class="plus"></span></span>
+      </li>
+      <ul class="sub-menu collapse in" id="signal_fea" aria-expanded="true">
+
+        <li data-toggle="collapse" data-target="#signal_type" class="">
+          <span class="arrow"></i> Event Type <span class="plus"></span></span>
+        </li>
+        <ul class="sub-menu collapse in sub-collapse" id="signal_type">
+          <% @signal_type_global.each_with_index do|st,i| %>
+            <li class="features" category="signal_type" id="signal_type_<%= i %>" data-toggle="tooltip" title="<%= st %>"><%= st %></li>
+          <% end %>
+        </ul>
+        <li data-toggle="collapse" data-target="#eeg" class="collapsed">
+          <span class="arrow"></i> EEG <span class="plus"></span></span>
+        </li>
+        <ul class="sub-menu collapse sub-collapse" id="eeg">
+          <% @eegs_global.each_with_index do|eeg,i| %>
+            <li class="features" category="eeg" id="eeg_<%= i %>"><%= eeg %></li>
+          <% end %>
+        </ul>
+
+        <li data-toggle="collapse" data-target="#ekg" class="collapsed">
+          <span class="arrow"></i> EKG <span class="plus"></span></span>
+        </li>
+        <ul class="sub-menu collapse sub-collapse" id="ekg">
+          <% @ekgs_global.each_with_index do|ekg,i| %>
+            <li class="features" category="ekg" id="ekg_<%= i %>"><%= ekg %></li>
+          <% end %>
+        </ul>
+
+        <li data-toggle="collapse" data-target="#other" class="collapsed">
+          <span class="arrow"></i> Other <span class="plus"></span></span>
+        </li>
+        <ul class="sub-menu collapse sub-collapse" id="other">
+          <% @others_global.each_with_index do|other,i| %>
+            <li class="features" category="other" id="other_<%= i %>"><%= other %></li>
+          <% end %>
+        </ul>
+
+        <li data-toggle="collapse" data-target="#duration" class="collapsed">
+          <span class="arrow"></i> Duration <span class="plus"></span></span>
+        </li>
+        <ul class="sub-menu collapse sub-collapse" id="duration">
+           <div class="range-bar">
+            <input id="duration-range-bar" category="duration" type="text"/>
+            <span class="fa fa-check" id="add-duration" style="margin-left: 20px;"></span>
+          </div> 
+        </ul>
+      </ul>
+    </ul>
+  </div>
+</div>
+
+<script>
+  $("#age-range-bar").slider({ min: <%= @age_min_show %>, max: <%= @age_max_global %>, value: [<%= @age_min_global %>, <%= @age_max_show %>], focus: false });
+
+  $("#duration-range-bar").slider({ min: <%= @duration_min_global %>, max: <%= @duration_max_global %>, value: [<%= @duration_min_global %>, <%= @duration_max_global %>], focus: false,tooltip_position:'bottom' });
+
+  function subjectMatching(){
+    var string_input = $("#subject_name_search").val();
+    $("#filters-list").empty();
+    if(string_input.length == 0){
+      queryFunc();
+    }
+    else{
+      $.ajax({
+        type: 'POST',
+        dataType: 'script',
+        url: "<%= subject_id_search_queries_path %>",
+        data: {string_input: string_input},
+      });
+    }
+  }
+</script>

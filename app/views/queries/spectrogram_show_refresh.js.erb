@@ -1,0 +1,7 @@
+$("#spectrogram_show").empty();
+var spect_val = <%= @spect_val.to_json.html_safe %>
+$("#spec_chan_show").text("Spectrum of channel: " + <%= @channel.to_json.html_safe %>);
+if(spect_val == "Time-Frequency")
+	spectrogramTFDraw(<%= @spec.to_json.html_safe %>,<%= @f_plot.to_json.html_safe %>,<%= @t_plot.to_json.html_safe %>,<%= @channel.to_json.html_safe %>);
+else
+	spectrogramDraw(<%= @y_plot.to_json.html_safe %>,<%= @f_plot.to_json.html_safe %>,<%= @channel.to_json.html_safe %>);

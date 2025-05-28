@@ -1,0 +1,39 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Patient:</strong>
+  <%= @subject.patient_id %>
+</p>
+
+<p>
+  <strong>Subject name:</strong>
+  <%= @subject.subject_name %>
+</p>
+
+<p>
+  <strong>Age:</strong>
+  <%= @subject.age %>
+</p>
+
+<p>
+  <strong>Genter:</strong>
+  <%= @subject.genter %>
+</p>
+
+<p>
+  <strong>Seizure number:</strong>
+  <%= @subject.seizure_number %>
+</p>
+
+<p>
+  <strong>Channels:</strong>
+  <%= @subject.channels %>
+</p>
+
+<p>
+  <strong>Fs:</strong>
+  <%= @subject.fs %>
+</p>
+
+<%= link_to 'Edit', edit_subject_path(@subject) %> |
+<%= link_to 'Back', subjects_path %>

@@ -1,0 +1,72 @@
+<div class="table-bar">
+  <span style="font-size:16px; padding-left:5px"> <span class="fa fa-table"></span>  Results: 
+    <span class="query-res-num">
+      <span class="num_text" id="query_num_text"><%= @query_num %></span> subject(s) 
+      <span class="divider-vertical"></span>
+      <span class="num_text" id="fragment_num_text"><%= @fragments_sum %></span> fragment(s) 
+      <span id="loading-sign-sub" class="fa fa-spinner fa-spin fa-fw loading-icon" style="display: none"></span>
+    </span>
+    <span class="query_download" id="query_download" style="float: right;cursor: pointer">
+      <span class="fa fa-cloud-download"></span> Download 
+    </span>
+  </span>
+  <hr>
+  <div class="query-result" style="margin-top: 10px">
+    <table id="all-table"  data-show-header="true" data-pagination="true" data-id-field="name" data-page-list="[5, 10, 25, 50, 100, ALL]" data-page-size="5">
+      <thead>
+      <tr>
+          <th data-field="id" data-sortable="true">#</th>
+          <!-- <th data-field="name" data-sortable="true">Name</th> -->
+          <th data-field="patient_id" data-sortable="true">Patient ID</th>
+          <th data-field="age" data-sortable="true">Age</th>
+          <th data-field="gender" data-sortable="true">Gender</th>
+          <th data-field="dataset" data-sortable="true">Dataset</th>
+          <th data-field="fragments" data-sortable="true">Fragments</th>
+          <th data-field="channel_num" data-sortable="true">Channels</th>
+          <th data-field="fs" data-sortable="true">Fs(Hz)</th>
+          <th data-field="show" data-formatter="showSubFormatter">Show</th>
+          <th data-field="download" data-formatter="downloadFormatter" >Download 
+            <div style="float: right">
+              <input class='cbox' type='checkbox' name='cbox_all' id='cbox_all'>
+            </div>
+          </th>
+          <th data-field="channel_labels" data-formatter="channelLabelFormatter" class="channel_labels"></th>
+      </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+    var data = <%= @queries_json.html_safe %>;
+
+    function showSubFormatter(value) {
+      return "<span class='fa fa-list-alt sub-show' style='cursor:pointer'></span>";
+    }
+
+    function downloadFormatter(value) {
+      return "<input class='cbox' type='checkbox' name='cbox'>"
+    }
+
+    function channelLabelFormatter(value) {
+      return '<span class="channel_label_each" value="'+ value +'"></span>';
+    }
+
+    $(function () {
+      $('#all-table').bootstrapTable({
+        data: data
+      });
+    });
+
+    $(document).on("click","#cbox_all",function(){
+      table = $("#all-table");
+      if($('#cbox_all').is(':checked')){
+        $(".cbox",table).prop('checked', true);
+      }
+      else{
+        $(".cbox",table).prop('checked', false);
+      }
+    });
+</script>
