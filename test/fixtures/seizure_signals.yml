@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  type: 
+  start: 
+  duration: 
+  fragments: 
+  pre_fragments: 
+  after_fragments: MyString
+
+two:
+  type: 
+  start: 
+  duration: 
+  fragments: 
+  pre_fragments: 
+  after_fragments: MyString

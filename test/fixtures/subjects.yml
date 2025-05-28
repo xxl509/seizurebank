@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  patient_id: 
+  subject_name: 
+  age: 
+  genter: 
+  seizure_number: 
+  channels: 
+  fs: 1.5
+
+two:
+  patient_id: 
+  subject_name: 
+  age: 
+  genter: 
+  seizure_number: 
+  channels: 
+  fs: 1.5
